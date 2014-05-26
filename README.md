@@ -6,7 +6,7 @@ A thin Java object persistence layer for JDBC.
 Ideas
 -----
 
-Graet things in Hibernate:
+Great things in Hibernate:
 
 * Association mapping: loading and saving associations in one easy step
 * database independence
