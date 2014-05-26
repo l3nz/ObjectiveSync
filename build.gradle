@@ -1,2 +1,165 @@
 // build file here
 
+JARS="$buildDir/dependencies"
+
+apply plugin: 'java'
+apply plugin: 'findbugs'
+apply plugin: 'maven'
+def env = System.getenv()
+
+//
+// I defaults valgono per HUDSON
+//
+
+project.ext {
+  webapp_name    = 'ObjectiveSync'
+  app_version    = '0.0.0.0'
+  build_number   = env["BUILD_NUMBER"]  
+  version_class  = 'ch/loway/oss/ObjectiveSync/CS.java'
+  build_time     = "" + new Date()
+}
+
+
+
+repositories {
+    //mavenCentral()
+	mavenRepo(url: 'http://jcenter.bintray.com') 
+}
+
+configurations {
+	ObjSync 
+}
+
+
+
+dependencies {	
+	ObjSync( 'mysql:mysql-connector-java:5.1.30' )
+	ObjSync( 'org.slf4j:slf4j-jdk14:1.7.7' )
+	ObjSync( 'com.h2database:h2:1.4.178' )
+}
+
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.7'
+
+    testCompile 'junit:junit:4.10'
+    testCompile 'org.slf4j:slf4j-jdk14:1.7.7'
+    testCompile 'mysql:mysql-connector-java:5.1.30'
+    testCompile 'com.h2database:h2:1.4.178'
+    
+}
+
+
+
+task solveDeps << {
+
+	copy {
+        from configurations.ObjSync
+        into "$JARS"
+        include '**/*.jar'        
+    }
+	
+}
+
+
+
+
+
+sourceSets {
+
+	main {
+		java {
+			srcDirs "$buildDir/classes_subst"
+		}
+	}
+
+	test {
+		java {
+			srcDirs "./tests"
+		}
+	}
+}
+
+
+task writeNewPom << {
+    pom {
+        project {
+            groupId 'ch.loway.oss.slicedbread'
+            artifactId 'slicedbread'
+            version project.ext.app_version
+            inceptionYear '2013'
+            licenses {
+                license {
+                    name 'GNU LGPL v3'
+                }
+            }
+        }
+    }.writeTo("$buildDir/libs/slicedbread-" + project.ext.app_version + ".pom")
+}
+
+
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from "$buildDir/classes_subst"
+    archiveName project.ext.webapp_name + "-" + project.ext.app_version + "-sources.jar"
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+    archiveName project.ext.webapp_name + "-" + project.ext.app_version + "-javadoc.jar"
+}
+
+
+
+jar {
+    manifest {
+        attributes("Implementation-Title": project.ext.webapp_name, 
+                   "Implementation-Version": project.ext.app_version)
+    }
+    archiveName project.ext.webapp_name + "-" + project.ext.app_version + ".jar"
+    from( "$buildDir/classes_subst" )
+}
+jar.dependsOn writeNewPom
+jar.dependsOn sourcesJar
+jar.dependsOn javadocJar
+
+
+
+task setVersionInSources() {
+	doLast {
+		def cjd = new File( "$buildDir/classes_subst" )
+		cjd.mkdirs();
+
+		def FileTree tree = fileTree( dir: "./classes" )	
+		//tree.each { File file -> 	println file }
+
+		copy {
+        from './classes'
+        into "$buildDir/classes_subst"                
+    }
+
+    ant.replace( file: "$buildDir/classes_subst/" + project.ext.version_class, 
+    	           token: "VERSION",
+    	           value: "VERSION = \"" + project.ext.app_version + "\"; //"    	           
+    	           )
+    
+    ant.replace( file: "$buildDir/classes_subst/" + project.ext.version_class, 
+    	           token: "BUILD_N",
+    	           value: "BUILD_N = \"" + project.ext.build_number + " - "  + project.ext.build_time  + "\"; //"
+    	           )  	  	
+	}
+}
+compileJava.dependsOn setVersionInSources
+
+// decide what to see -only one can be enabled
+// get the HTML report from build/reports/findbugs/main.html
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+    ignoreFailures = true
+ }
+
