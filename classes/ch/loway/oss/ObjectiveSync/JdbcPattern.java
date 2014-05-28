@@ -8,16 +8,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * This class encodes the correct JDBC handling pattern, with all resource
+ * reclamation and try/catch/finally logic. 
+ * 
+ * Plus, we offer a few ready-made
+ * static methods for "vanilla" insert, update and exec. 
+ * 
+ * Note that there is no "vanilla" select as this is something you really 
+ * should customize for general usage. 
+ * 
  *
  * @author lenz
  */
 public abstract class JdbcPattern {
 
-    public static Logger logger = LoggerFactory.getLogger(JdbcPattern.class);
+    // logger is public so children can use it
+    public static final Logger logger = LoggerFactory.getLogger(JdbcPattern.class);
     public Statement stmt = null;
     public ResultSet rs = null;
-    int nRigheUpdate = 0;
+    int nRowsUpdated = 0;
     String stChiaveInsert = "";
 
     public abstract void run(Connection conn) throws SQLException;
@@ -45,7 +54,7 @@ public abstract class JdbcPattern {
                     stmt.close();
                 }
             } catch (Exception e) {
-                logger.error("Exception in finally", e);
+                logger.error("Ouch! Exception in finally block!", e);
             }
         }
 
@@ -57,9 +66,7 @@ public abstract class JdbcPattern {
             @Override
             public void run(Connection conn) throws SQLException {
                 stmt = conn.createStatement();
-                nRigheUpdate = stmt.executeUpdate(insertQuery, Statement.RETURN_GENERATED_KEYS);
-
-                // ottiene il risultato
+                nRowsUpdated = stmt.executeUpdate(insertQuery, Statement.RETURN_GENERATED_KEYS);                
                 rs = stmt.getGeneratedKeys();
 
                 if (rs != null) {
@@ -83,10 +90,10 @@ public abstract class JdbcPattern {
                 stmt = conn.createStatement();
 
                 // Execute the query
-                nRigheUpdate = stmt.executeUpdate(updateSql);
+                nRowsUpdated = stmt.executeUpdate(updateSql);
 
-                if (nRigheUpdate != 1) {
-                    throw new SQLException("Update failed. Rows returned: " + nRigheUpdate);
+                if (nRowsUpdated != 1) {
+                    throw new SQLException("Update failed. Rows returned: " + nRowsUpdated);
                 }
             }
         };
