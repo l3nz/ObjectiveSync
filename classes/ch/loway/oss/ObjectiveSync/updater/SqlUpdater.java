@@ -76,7 +76,7 @@ public class SqlUpdater {
         }
 
         sb.append(" WHERE ");
-        for ( Entry<String,String> e: mVals.entrySet()) {
+        for ( Entry<String,String> e: mPk.entrySet()) {
 
             sb.append( e.getKey() ).append( " = " ).append( e.getValue() );
 

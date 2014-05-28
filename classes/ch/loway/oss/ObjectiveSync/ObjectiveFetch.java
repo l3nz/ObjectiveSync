@@ -32,7 +32,7 @@ public abstract class ObjectiveFetch<T> {
         throw new IllegalArgumentException("Method save() undefined for " + obj.getClass() );
     };
 
-    public List<T> query(Connection conn, final String sql) {
+    public List<T> query(Connection conn, final String sql) throws SQLException {
 
         final List<T> results = new ArrayList<T>();
 
@@ -73,7 +73,7 @@ public abstract class ObjectiveFetch<T> {
     }
 
 
-    private void jdbcUpdate( Connection conn, final String sqlUpdate ) {
+    private void jdbcUpdate( Connection conn, final String sqlUpdate ) throws SQLException {
 
         new JdbcPattern() {
 
@@ -94,7 +94,7 @@ public abstract class ObjectiveFetch<T> {
 
     }
 
-    private String jdbcInsert( Connection conn, final String sqlInsert ) {
+    private String jdbcInsert( Connection conn, final String sqlInsert ) throws SQLException {
 
         JdbcPattern p = new JdbcPattern() {
 

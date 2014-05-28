@@ -59,9 +59,8 @@ public class ObjectiveFetchTest {
     public void testLoadPerson() throws SQLException {
 
         String sql = "CREATE TABLE EXAMPLE ( id int auto_increment, name char(50), surname char(50) )";
-        SqlTools.execSql(conn, sql);
-
-
+        JdbcPattern.exec(conn, sql);
+        
         ObjectiveFetch<Person> of = new ObjectiveFetch<Person>() {
             @Override
             public SqlTable table() {
@@ -82,7 +81,9 @@ public class ObjectiveFetchTest {
 
             @Override
             public void save(Person p, FieldSet su) throws SQLException {
-                su.set("id", new IntValue( p.id ));
+                if ( p.id > 0 ) {
+                    su.set("id", new IntValue( p.id ));
+                }
                 su.set("name", new StringValue( p.name ) );
                 su.set( "surname", new StringValue( p.surname) );
             }
@@ -90,12 +91,12 @@ public class ObjectiveFetchTest {
 
 
 
-        Person p = Person.build(9, "ike", "boo");
+        Person p = Person.build(0, "ike", "boo");
         of.commit(conn, p);
 
 
         List<Person> lP = of.query(conn, "SELECT * FROM EXAMPLE");
-        assertEquals( "N perosne", 1, lP.size());
+        assertEquals( "N persons", 1, lP.size());
 
     }
 
