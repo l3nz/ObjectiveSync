@@ -24,7 +24,7 @@ public class SqlTools {
      * Opens a connection.
      * 
      * @param connString
-     * @return
+     * @return a working connection.
      * @throws SQLException
      */
     public static Connection openConnection(String connString) throws SQLException {
@@ -70,7 +70,7 @@ public class SqlTools {
      * Convert any string to a number. If invalid, returns zero.
      * 
      * @param s
-     * @return
+     * @return the number; if empty or invalid, zero.
      */
     public static int cint(String s) {
         try {
@@ -103,8 +103,7 @@ public class SqlTools {
         if (dtData == null) {
             return "";
         }
-        ;
-
+  
         SimpleDateFormat formatter = new SimpleDateFormat(stFormato);
         return formatter.format(dtData);
     }
@@ -122,12 +121,17 @@ public class SqlTools {
     }
 
     /**
-     * Implementazione della quote String con gli apici opzionali.
+     * Implementation of SQL quoting with an optional start and end (usually
+     * the " sign plus relevant spaces).
      *
-     * @param s
-     * @param conApici
-     * @return
+     * 
+     * @param sb builder
+     * @param s value
+     * @param prefix the prefix
+     * @param postfix the postfix
+     * @return a quoted string
      */
+    
     private static String pvtQuoteString(StringBuilder sb, String s, String prefix, String postfix) {
 
         if (s == null) {

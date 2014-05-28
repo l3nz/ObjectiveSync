@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.awt.geom.Curve;
 
 /**
  *
@@ -21,16 +20,16 @@ public abstract class JdbcPattern {
     int nRigheUpdate = 0;
     String stChiaveInsert = "";
 
-    public abstract void run( Connection conn ) throws SQLException;
+    public abstract void run(Connection conn) throws SQLException;
 
-    public void query(Connection conn ) throws SQLException {
+    public void query(Connection conn) throws SQLException {
 
         try {
 
-        int nRigheUpdate = 0;
-        String stChiaveInsert = "";
-            
-            run( conn );
+            int nRigheUpdate = 0;
+            String stChiaveInsert = "";
+
+            run(conn);
 
         } catch (SQLException sqlEx) {
             logger.error("Exception when running: ", sqlEx);
@@ -51,15 +50,14 @@ public abstract class JdbcPattern {
         }
 
     }
-    
-    
-    public static JdbcPattern insert( Connection conn, final String insertQuery ) throws SQLException {
+
+    public static JdbcPattern insert(Connection conn, final String insertQuery) throws SQLException {
         JdbcPattern pInsert = new JdbcPattern() {
 
             @Override
             public void run(Connection conn) throws SQLException {
                 stmt = conn.createStatement();
-                nRigheUpdate = stmt.executeUpdate( insertQuery, Statement.RETURN_GENERATED_KEYS);
+                nRigheUpdate = stmt.executeUpdate(insertQuery, Statement.RETURN_GENERATED_KEYS);
 
                 // ottiene il risultato
                 rs = stmt.getGeneratedKeys();
@@ -70,49 +68,51 @@ public abstract class JdbcPattern {
                     }
                 }
             }
-        };        
+        };
         pInsert.query(conn);
         return pInsert;
     }
-    
-    public static JdbcPattern update( Connection conn, final String updateSql ) throws SQLException {
+
+    public static JdbcPattern update(Connection conn, final String updateSql) throws SQLException {
 
         JdbcPattern pUpdate = new JdbcPattern() {
 
             @Override
             public void run(Connection conn) throws SQLException {
-        
-        stmt = conn.createStatement();
 
-            // Execute the query
-            nRigheUpdate = stmt.executeUpdate(updateSql);
+                stmt = conn.createStatement();
 
-            if ( nRigheUpdate != 1 ) {
-                throw new SQLException("Update failed. Rows returned: " + nRigheUpdate );
+                // Execute the query
+                nRigheUpdate = stmt.executeUpdate(updateSql);
+
+                if (nRigheUpdate != 1) {
+                    throw new SQLException("Update failed. Rows returned: " + nRigheUpdate);
+                }
             }
-            }};
+        };
         pUpdate.query(conn);
         return pUpdate;
 
     }
-    
-    public static JdbcPattern exec( Connection conn, final String anySql ) throws SQLException {
+
+    public static JdbcPattern exec(Connection conn, final String anySql) throws SQLException {
 
         JdbcPattern pExec = new JdbcPattern() {
 
             @Override
             public void run(Connection conn) throws SQLException {
-        
-        stmt = conn.createStatement();
 
-            // Execute the query
-            stmt.execute(anySql);
+                stmt = conn.createStatement();
 
-            }};
+                // Execute the query
+                stmt.execute(anySql);
+
+            }
+        };
         pExec.query(conn);
         return pExec;
-        
-    }    
+
+    }
 }
 // $Log$
 //

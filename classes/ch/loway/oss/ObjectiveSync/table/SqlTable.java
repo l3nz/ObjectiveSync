@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
+ * Describes a table as a set of fields (columns).
  *
  * @author lenz
  */
@@ -27,7 +27,7 @@ public class SqlTable {
     /**
      * Gets us the PK field.
      * 
-     * @return
+     * @return the PK in use
      */
 
     public SqlField getPk() {
@@ -43,7 +43,7 @@ public class SqlTable {
      * Is a field defined for this table?
      * 
      * @param name
-     * @return
+     * @return true if the field is currently defined.
      */
 
     public boolean fieldExists( String name ) {
@@ -56,9 +56,9 @@ public class SqlTable {
     }
 
     /**
-     * A colelction of elements,
+     * A collection of columns describing the table.
      * 
-     * @return
+     * @return the columns
      */
 
     public List<SqlField> values() {
@@ -67,5 +67,3 @@ public class SqlTable {
 
 }
 
-// $Log$
-//
