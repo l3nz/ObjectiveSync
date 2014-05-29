@@ -69,7 +69,7 @@ public class SqlUpdater {
      * @return SQL query as a string
      */
     
-    public String getUpdate() {
+    public String getUpdateQuery() {
 
         if ( !fs.isPkSet() ) {
             throw new IllegalStateException("This is not an UPDATE query");

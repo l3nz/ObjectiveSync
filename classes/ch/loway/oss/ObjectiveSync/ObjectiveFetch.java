@@ -70,7 +70,7 @@ public abstract class ObjectiveFetch<T> {
             updatePrimaryKey( pIns.insertKey );
 
         } else {
-            JdbcPattern.update(conn, su.getUpdate());
+            JdbcPattern.update(conn, su.getUpdateQuery());
         }
     }
 }
