@@ -35,10 +35,10 @@ public abstract class ObjectiveFetch<T> {
         new JdbcPattern() {
 
             @Override
-            public void run(Connection conn) throws SQLException {
+            public void performJdbcAccess(Connection conn) throws SQLException {
                 stmt = conn.createStatement();
 
-                // Execute the query
+                // Execute the run
                 rs = stmt.executeQuery(sql);
 
                 // Loop through the result set
@@ -47,7 +47,7 @@ public abstract class ObjectiveFetch<T> {
                 }
 
             }
-        }.query(conn);
+        }.run(conn);
 
         return results;
     }

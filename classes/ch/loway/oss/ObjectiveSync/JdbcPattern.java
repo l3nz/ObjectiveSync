@@ -27,18 +27,39 @@ public abstract class JdbcPattern {
     public Statement stmt = null;
     public ResultSet rs = null;
     int nRowsUpdated = 0;
-    String stChiaveInsert = "";
+    String insertKey = "";
+    int durationMs = 0;
 
-    public abstract void run(Connection conn) throws SQLException;
+    /**
+     * Here we perform JDBC access logic.
+     * 
+     * Tip: the public Statement stmt and ResultSet rs are
+     *   closed automatically if defined. So you should use them
+     *   to avoid wrapping your own code in another try/catch/finally block.
+     * 
+     * Let any errors bubble up as SQLExceptions.
+     * 
+     * @param conn
+     * @throws SQLException 
+     */
+    
+    public abstract void performJdbcAccess(Connection conn) throws SQLException;
 
-    public void query(Connection conn) throws SQLException {
+    
+    /**
+     * This methods performs database fetching.
+     * 
+     * @param conn
+     * @throws SQLException 
+     */
+    
+    public void run(Connection conn) throws SQLException {
 
         try {
-
-            int nRigheUpdate = 0;
-            String stChiaveInsert = "";
-
-            run(conn);
+            
+            long startTime = System.currentTimeMillis();
+            performJdbcAccess(conn);
+            durationMs = (int) (System.currentTimeMillis()-startTime);
 
         } catch (SQLException sqlEx) {
             logger.error("Exception when running: ", sqlEx);
@@ -60,36 +81,55 @@ public abstract class JdbcPattern {
 
     }
 
+    /**
+     * Ready-made insert updater.
+     * 
+     * @param conn
+     * @param insertQuery
+     * @return the object, so you can fetch the insert-id.
+     * @throws SQLException 
+     */
+    
     public static JdbcPattern insert(Connection conn, final String insertQuery) throws SQLException {
         JdbcPattern pInsert = new JdbcPattern() {
 
             @Override
-            public void run(Connection conn) throws SQLException {
+            public void performJdbcAccess(Connection conn) throws SQLException {
                 stmt = conn.createStatement();
                 nRowsUpdated = stmt.executeUpdate(insertQuery, Statement.RETURN_GENERATED_KEYS);                
                 rs = stmt.getGeneratedKeys();
 
                 if (rs != null) {
                     while (rs.next()) {
-                        stChiaveInsert = rs.getString(1);
+                        insertKey = rs.getString(1);
                     }
                 }
             }
         };
-        pInsert.query(conn);
+        pInsert.run(conn);
         return pInsert;
     }
 
+    /**
+     * Ready-made update query.
+     * This method raises an exception if the number of updater rows is != 1
+     * 
+     * @param conn
+     * @param updateSql
+     * @return the object after running the query.
+     * @throws SQLException 
+     */
+    
     public static JdbcPattern update(Connection conn, final String updateSql) throws SQLException {
 
         JdbcPattern pUpdate = new JdbcPattern() {
 
             @Override
-            public void run(Connection conn) throws SQLException {
+            public void performJdbcAccess(Connection conn) throws SQLException {
 
                 stmt = conn.createStatement();
 
-                // Execute the query
+                // Execute the run
                 nRowsUpdated = stmt.executeUpdate(updateSql);
 
                 if (nRowsUpdated != 1) {
@@ -97,30 +137,37 @@ public abstract class JdbcPattern {
                 }
             }
         };
-        pUpdate.query(conn);
+        pUpdate.run(conn);
         return pUpdate;
 
     }
 
+    /**
+     * Runs a generic, no-reply query.
+     * 
+     * @param conn
+     * @param anySql
+     * @return the object after running the query.
+     * @throws SQLException 
+     */
+    
     public static JdbcPattern exec(Connection conn, final String anySql) throws SQLException {
 
         JdbcPattern pExec = new JdbcPattern() {
 
             @Override
-            public void run(Connection conn) throws SQLException {
+            public void performJdbcAccess(Connection conn) throws SQLException {
 
                 stmt = conn.createStatement();
 
-                // Execute the query
+                // Execute the run
                 stmt.execute(anySql);
 
             }
         };
-        pExec.query(conn);
+        pExec.run(conn);
         return pExec;
 
     }
 }
-// $Log$
-//
 

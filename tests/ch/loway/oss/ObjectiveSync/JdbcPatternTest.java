@@ -55,15 +55,15 @@ public class JdbcPatternTest {
         
         JdbcPattern pInsert = JdbcPattern.insert(conn,  "INSERT INTO EXAMPLE (name, surname) VALUES ('A', 'B')" );
                 
-        System.out.println( "Gen key:" + pInsert.stChiaveInsert );
-        assertTrue( "Chiave generata", pInsert.stChiaveInsert.length() > 0);                
+        System.out.println( "Gen key:" + pInsert.insertKey );
+        assertTrue( "Chiave generata", pInsert.insertKey.length() > 0);                
     }
     
     @Test
     public void testUpdate() throws Exception {
         JdbcPattern pInsert = JdbcPattern.insert(conn,  "INSERT INTO EXAMPLE (name, surname) VALUES ('A', 'B')" );
         
-        JdbcPattern.update(conn, "UPDATE EXAMPLE SET surname ='X' WHERE id=" + pInsert.stChiaveInsert );           
+        JdbcPattern.update(conn, "UPDATE EXAMPLE SET surname ='X' WHERE id=" + pInsert.insertKey );           
     }
 
     @Test
