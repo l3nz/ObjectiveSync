@@ -27,6 +27,12 @@ public abstract class ObjectiveFetch<T> {
     public void save(T obj, FieldSet su) throws SQLException {
         throw new IllegalArgumentException("Method save() undefined for " + obj.getClass());
     }
+    
+    public void updatePrimaryKey( String pkFromDb ) {
+        // Override me
+        logger.debug( "PK read from DB is {} but I'm not storing it", pkFromDb );
+    }
+    
 
     public List<T> query(Connection conn, final String sql) throws SQLException {
 
@@ -60,8 +66,8 @@ public abstract class ObjectiveFetch<T> {
         SqlUpdater su = new SqlUpdater(fs);
 
         if (su.isInsert()) {
-            JdbcPattern pIns = JdbcPattern.insert(conn, su.getInsert());
-            // \todo update insert key
+            JdbcPattern pIns = JdbcPattern.insert(conn, su.getInsertQuery());
+            updatePrimaryKey( pIns.insertKey );
 
         } else {
             JdbcPattern.update(conn, su.getUpdate());

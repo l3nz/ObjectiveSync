@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- *
+ * Builds insert and update queries.
  *
  * @author lenz
  */
@@ -19,8 +19,14 @@ public class SqlUpdater {
         this.fs = fs;
     }
 
+    /**
+     * Builds an INSERT query for the object.
+     * The PK is assumed to be auto-generated.
+     * 
+     * @return SQL query as a string
+     */
 
-    public String getInsert() {
+    public String getInsertQuery() {
 
         if ( fs.isPkSet() ) {
             throw new IllegalStateException("This is not an INSERT query");
@@ -29,7 +35,7 @@ public class SqlUpdater {
         String tableName = fs.table.name;
         Map<String,String> mVals = fs.getValuesButPk();
 
-        List<String> fields = new ArrayList(mVals.keySet());
+        List<String> fields = new ArrayList<String>(mVals.keySet());
         List<String> vals   = new ArrayList<String>();
         for ( String fieldName: fields ) {
             vals.add( mVals.get(fieldName) );
@@ -54,6 +60,15 @@ public class SqlUpdater {
         return sb.toString();
     }
 
+    /**
+     * Builds an update query.
+     * 
+     * We expect this to be by PK.
+     * \todo handling Optilock
+     * 
+     * @return SQL query as a string
+     */
+    
     public String getUpdate() {
 
         if ( !fs.isPkSet() ) {
@@ -85,6 +100,12 @@ public class SqlUpdater {
         return sb.toString();
     }
 
+    /**
+     * Checks if we have a defined PK (so we UPDATE) the object 
+     * or we do not have it and so we INSERT.
+     * 
+     * @return whether the PK is defined 
+     */
 
     public boolean isInsert() {
         return !fs.isPkSet();
