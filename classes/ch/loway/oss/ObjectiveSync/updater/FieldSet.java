@@ -70,7 +70,7 @@ public class FieldSet {
 
         Map<String, String> hmOut = new HashMap<String, String>();
         for (SqlField f : table.values()) {
-            if (!f.pk) {
+            if ( f.usedAs != SqlField.UsedAs.PK) {
 
                 if (defFields.containsKey(f.name)) {
 

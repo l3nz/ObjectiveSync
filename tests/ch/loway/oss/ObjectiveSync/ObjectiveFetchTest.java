@@ -1,10 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package ch.loway.oss.ObjectiveSync;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 import ch.loway.oss.ObjectiveSync.maps.Person;
@@ -43,7 +40,7 @@ public class ObjectiveFetchTest {
         Class.forName("org.h2.Driver");
         conn = SqlTools.openConnection("jdbc:h2:mem:test");
 
-        String sql = "CREATE TABLE EXAMPLE ( id int auto_increment, name char(50), surname char(50) )";
+        String sql = "CREATE TABLE person ( id int auto_increment, name char(50), surname char(50), org_id int )";
         JdbcPattern.exec(conn, sql);
 
     }
@@ -62,7 +59,7 @@ public class ObjectiveFetchTest {
         Person p = Person.build(0, "ike", "boo");
         of.commit(conn, p);
 
-        List<Person> lP = of.queryDirect(conn, "SELECT * FROM EXAMPLE");
+        List<Person> lP = of.queryDirect(conn, "SELECT * FROM person");
         assertEquals( "N persons", 1, lP.size());
 
     }
@@ -93,7 +90,7 @@ public class ObjectiveFetchTest {
 
         of.commitAll(conn, collection);
 
-        List<Person> lP = of.queryDirect(conn, "SELECT * FROM EXAMPLE");
+        List<Person> lP = of.queryDirect(conn, "SELECT * FROM person");
         assertEquals( "N persons", 3, lP.size());
     }
 
@@ -114,6 +111,58 @@ public class ObjectiveFetchTest {
         assertTrue( "ID set", lP.get(0).id != 0 );
 
     }
+
+
+    @Test
+    public void testGetAll() throws SQLException {
+
+        PersonDB of = new PersonDB();
+
+        List<Person> collection = new ArrayList<Person>();
+        collection.add( Person.build(0, "A", "B") );
+        collection.add( Person.build(0, "C", "D") );
+        collection.add( Person.build(0, "E", "F") );
+        of.commitAll(conn, collection);
+
+        // Load all PKs
+        List<String> lQ = new ArrayList<String>();
+        for ( Person p: collection) {
+            lQ.add( "" + p.id );
+        }
+
+        List<Person> lP = of.getAll( conn, lQ );
+        assertEquals( "N persons", 3, lP.size());
+    }
+
+    @Test
+    public void testGetAll_wrongKeyAdded() throws SQLException {
+
+        PersonDB of = new PersonDB();
+
+        List<Person> collection = new ArrayList<Person>();
+        collection.add( Person.build(0, "A", "B") );
+        collection.add( Person.build(0, "C", "D") );
+        collection.add( Person.build(0, "E", "F") );
+        of.commitAll(conn, collection);
+
+        // Load all PKs
+        List<String> lQ = new ArrayList<String>();
+        for ( Person p: collection) {
+            lQ.add( "" + p.id );
+        }
+        lQ.add( "19137" );
+
+        try {
+            List<Person> lP = of.getAll( conn, lQ );
+        } catch ( SQLException e) {
+            System.out.println( e.toString() );
+            return;
+        }
+        fail( "No exception raised!");
+
+        
+    }
+
 
 
 }

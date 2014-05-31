@@ -6,7 +6,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,4 +167,25 @@ public class SqlTools {
         sb.append(postfix);
         return sb.toString();
     }
+
+    public static void addListToStringBuilder(StringBuilder sb, Collection<String> lS, String separator, String emptyCase) {
+
+        if (lS.isEmpty()) {
+            sb.append(emptyCase);
+
+        } else {
+
+            int pos = 0;
+            for (String val : lS) {
+                if (pos > 0) {
+                    sb.append(separator);
+                }
+                sb.append(val);
+                pos++;
+            }
+        }
+
+    }
+
+
 }

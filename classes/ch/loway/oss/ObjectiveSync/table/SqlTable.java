@@ -31,13 +31,35 @@ public class SqlTable {
      */
 
     public SqlField getPk() {
+        return getFieldUsedFor(SqlField.UsedAs.PK);
+
+    }
+
+    /**
+     * Get the Parents' PK field
+     * @return
+     */
+
+    public SqlField getParentPk() {
+        return getFieldUsedFor(SqlField.UsedAs.PARENT_PK);
+    }
+
+    /**
+     * Finds a field.
+     * 
+     * @param usage
+     * @return
+     */
+
+    private SqlField getFieldUsedFor( SqlField.UsedAs usage ) {
         for ( SqlField f: fields ) {
-            if ( f.pk ) {
+            if ( f.usedAs == usage ) {
                 return f;
             }
         }
         return null;
     }
+
 
     /**
      * Is a field defined for this table?

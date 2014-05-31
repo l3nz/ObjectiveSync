@@ -2,14 +2,20 @@ package ch.loway.oss.ObjectiveSync;
 
 import ch.loway.oss.ObjectiveSync.table.SqlField;
 import ch.loway.oss.ObjectiveSync.table.SqlTable;
+import ch.loway.oss.ObjectiveSync.table.type.StringValue;
+import ch.loway.oss.ObjectiveSync.updater.deferred.DeferredLoader;
 import ch.loway.oss.ObjectiveSync.updater.FieldSet;
 import ch.loway.oss.ObjectiveSync.updater.SqlUpdater;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +27,8 @@ import org.slf4j.LoggerFactory;
 public abstract class ObjectiveFetch<T> {
 
     private final static Logger logger = LoggerFactory.getLogger(ObjectiveFetch.class);
+
+    List<DeferredLoader> deferredLoaders = new ArrayList<DeferredLoader>();
 
     /**
      * Defines a table - mandatory.
@@ -54,6 +62,18 @@ public abstract class ObjectiveFetch<T> {
     }
 
     /**
+     * Saves sub-objects, if that's needed.
+     * 
+     * @param conn
+     * @param obj my main object
+     * @throws SQLException
+     */
+
+    public void saveSubOjects( Connection conn, T obj ) throws SQLException {
+        
+    }
+
+    /**
      * After an insert, this call-back is hit to updfate your object with the
      * new PK value.
      * You choose wheter you want o use this or not.
@@ -64,6 +84,11 @@ public abstract class ObjectiveFetch<T> {
     public void updatePrimaryKey( T object, String pkFromDb ) {
         // Override me
         logger.debug( "PK read from DB is {} but I'm not storing it", pkFromDb );
+    }
+
+
+    public void deferLoading( DeferredLoader l ) {
+        deferredLoaders.add(l);
     }
 
 
@@ -85,6 +110,7 @@ public abstract class ObjectiveFetch<T> {
     public List<T> queryDirect(Connection conn, final String sql) throws SQLException {
 
         final List<T> results = new ArrayList<T>();
+        deferredLoaders.clear();
 
         new JdbcPattern() {
 
@@ -103,6 +129,12 @@ public abstract class ObjectiveFetch<T> {
             }
         }.run(conn);
 
+        for (DeferredLoader dl: deferredLoaders ) {
+            dl.query(conn);
+        }
+
+        // I want to make sure we keep no pointers to the object we just created.
+        deferredLoaders.clear();
         return results;
     }
 
@@ -146,39 +178,77 @@ public abstract class ObjectiveFetch<T> {
 
     /**
      * Loads one specific object by primary key.
-     * If no object is found, returns null.
-     * If more than one object are found, aborts.
+     * If no object is found (or moe than one, but that's unlikely), raises an exception.
      * 
      * @param conn
-     * @param pk
+     * @param usedAs
      * @return
      * @throws SQLException
      */
     public T get( Connection conn, int pk ) throws SQLException {
-        List<T> results = query( conn, "WHERE pk = " + pk );
-        if ( results.size() == 1 ) {
-            return results.get(0);
-        } else
-        if ( results.isEmpty() ) {
-            return null;
-        } else
-        {
-            throw new SQLException("More than one object returned for id #" + pk );
-        }
+        List<T> results = getAll( conn, Arrays.asList( new String[]{ "" + pk } ));
+        return results.get(0);
     }
 
+
     /**
-     * Saves an object to the database.
+     * Get all items by PK.
+     * Mke sure that we get the _same_ number of results we have in our set of
+     * unique inputs.  
      * 
      * @param conn
-     * @param object
+     * @param pks
+     * @return
      * @throws SQLException
      */
 
-    public void commit(Connection conn, T object) throws SQLException {
+
+    public List<T> getAll( Connection conn, List<String> pks ) throws SQLException {
+        
+        if ( pks.isEmpty() ) {
+            return Collections.EMPTY_LIST;
+        }
+
+        Set<String> sKeys = new HashSet<String>( pks );
+
+        SqlField myPkField = table().getPk();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append( " WHERE ").append( myPkField.name ).append( " IN ( ");
+        SqlTools.addListToStringBuilder(sb, sKeys, ", ", "-1") ;
+        sb.append( " ) ");
+
+        List<T> results = query( conn, sb.toString() );
+
+        if ( results.size() != sKeys.size() ) {
+            throw new SQLException("Expected " + sKeys.size() + " results but only got " + results.size() + " when searching by PK: " + sb.toString() );
+        }
+
+        return results;
+
+    }
+
+    /**
+     * 
+     * @param conn
+     * @param object
+     * @param parentPk
+     * @throws SQLException
+     */
+
+    public void commit( Connection conn, T object, String parentPk ) throws SQLException  {
 
         FieldSet fs = new FieldSet(table());
         save(object, fs);
+
+        if ( !parentPk.isEmpty() ) {
+            SqlField parentPkF = table().getParentPk();
+            if ( parentPkF == null ) {
+                throw new SQLException( "The table does not have a parentPk field");
+            } else {
+                fs.set(parentPkF.name, new StringValue(parentPk) );
+            }
+        }
 
         SqlUpdater su = new SqlUpdater(fs);
 
@@ -189,10 +259,43 @@ public abstract class ObjectiveFetch<T> {
         } else {
             JdbcPattern.update(conn, su.getUpdateQuery());
         }
+
+        // if we have any sub objects, let's save them.
+        saveSubOjects(conn, object);
+
+    }
+
+
+
+    /**
+     * Saves an object to the database.
+     * 
+     * @param conn
+     * @param object
+     * @throws SQLException
+     */
+
+    public void commit(Connection conn, T object) throws SQLException {
+        commit( conn, object, "");
     }
 
     /**
-     * Commits a set of objects.
+     * Commits a set of objects having the same parentPk.
+     *
+     * @param conn
+     * @param objects
+     * @param parentPk
+     * @throws SQLException
+     */
+
+    public void commitAll( Connection conn, Collection<T> objects, String parentPk ) throws SQLException {
+        for (T o: objects) {
+            commit( conn, o, parentPk);
+        }
+    }
+
+    /**
+     * Commit a set of objects.
      * 
      * @param conn
      * @param objects
@@ -200,11 +303,8 @@ public abstract class ObjectiveFetch<T> {
      */
 
     public void commitAll( Connection conn, Collection<T> objects ) throws SQLException {
-
-        for (T o: objects) {
-            commit( conn, o);
-        }
-
+        commitAll( conn, objects, "");
     }
+
 
 }

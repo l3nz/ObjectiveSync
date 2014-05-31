@@ -169,5 +169,21 @@ public abstract class JdbcPattern {
         return pExec;
 
     }
+
+    /**
+     * A quick-and-dirty way to run a set of statement, e.g. to create tables.
+     * 
+     * 
+     * @param conn
+     * @param statements
+     * @throws SQLException
+     */
+
+    public static void execAll( Connection conn, String[] statements ) throws SQLException {
+        for ( String statement: statements ) {
+            exec(conn, statement);
+        }
+    }
+
 }
 

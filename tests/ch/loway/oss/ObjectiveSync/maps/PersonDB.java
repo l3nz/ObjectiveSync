@@ -29,10 +29,12 @@ public class PersonDB extends ObjectiveFetch<Person> {
 
     @Override
     public SqlTable table() {
-        return new SqlTable("EXAMPLE")
+        return new SqlTable("person")
                 .field(SqlField.pk("id", "int auto_increment", null))
                 .field(SqlField.str("name", "char(50)", null, null))
-                .field(SqlField.str("surname", "char(50)", null, null));
+                .field(SqlField.str("surname", "char(50)", null, null))
+                .field(SqlField.parentPk("org_id", "int", null))
+                ;
     }
 
     /**
