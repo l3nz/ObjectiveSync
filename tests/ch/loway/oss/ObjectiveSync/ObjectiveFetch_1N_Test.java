@@ -18,7 +18,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * tests Objectivefectc in 1:N associations.
+ * tests ObjectiveFetch in 1:N associations.
  *
  * @author lenz
  */

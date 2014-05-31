@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 /**
- * This object manages the persstence for Organizaion objects, that are mainly
+ * This object manages the persstence for Organization objects, that are mainly
  * interesting because they manage an 1:N relationship to Persons.
  *
  * @author lenz
@@ -39,6 +39,11 @@ public class OrganizationDB extends ObjectiveFetch<Organization> {
     /**
      * Loads an object of class Organization.
      *
+     * Notice how we use a DeferredLoader that holds a reference to the object
+     * being created so that after we have created objects, we can query the
+     * database again and load other objects by their PK. This means we can coalesce
+     * PK accesses.
+     *
      * @param rs
      * @return
      * @throws SQLException
@@ -50,16 +55,13 @@ public class OrganizationDB extends ObjectiveFetch<Organization> {
         org.id = rs.getInt("id");
         org.name = rs.getString("name");
 
-        DeferredLoadByParent<Person> dlp = new DeferredLoadByParent<Person>() {
-
+        // we load all kids for this parent
+        deferLoading( new DeferredLoadByParent<Person>() {
             @Override
             public void update(Set<Person> sons) {
                 org.members = sons;
             }
-        };
-        dlp.build( new PersonDB(), org.id );
-
-        deferLoading( dlp );
+        }.setup( new PersonDB(), org.id ));        
         
         return org;
 
@@ -71,7 +73,8 @@ public class OrganizationDB extends ObjectiveFetch<Organization> {
      * Note that we currently do not set the PK  if it's not set.
      * 
      * @param p The object to be saved
-     * @param su The fieldSet where I will set values.
+     * @param su Th
+     * e fieldSet where I will set values.
      * @throws SQLException
      */
 
@@ -84,7 +87,7 @@ public class OrganizationDB extends ObjectiveFetch<Organization> {
     }
 
     @Override
-    public void saveSubOjects(Connection conn, Organization obj) throws SQLException {
+    public void saveSubObjects(Connection conn, Organization obj) throws SQLException {
         PersonDB db = new PersonDB();
         db.commitAll(conn, obj.members, Integer.toString(obj.id) );
     }
