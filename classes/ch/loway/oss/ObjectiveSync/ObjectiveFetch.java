@@ -1,5 +1,6 @@
 package ch.loway.oss.ObjectiveSync;
 
+import ch.loway.oss.ObjectiveSync.table.SqlField;
 import ch.loway.oss.ObjectiveSync.table.SqlTable;
 import ch.loway.oss.ObjectiveSync.updater.FieldSet;
 import ch.loway.oss.ObjectiveSync.updater.SqlUpdater;
@@ -70,7 +71,11 @@ public abstract class ObjectiveFetch<T> {
      * Returns the result of a query.
      * In this case you have to pass a query like
      * SELECT ... FROM ... JOIN ... WHERE ....
-     * 
+     *
+     * In general you will want to use the query() method
+     * that takes care of most things for you.
+     *
+     * @see query()
      * @param conn
      * @param sql
      * @return
@@ -101,15 +106,33 @@ public abstract class ObjectiveFetch<T> {
         return results;
     }
 
+    /**
+     * Runs a query for this object by passing the WHERE ... ORDER BY ... clauses.
+     *
+     *
+     * @param conn
+     * @param sqlWhere
+     * @return
+     * @throws SQLException
+     */
+
     public List<T> query(Connection conn, final String sqlWhere) throws SQLException {
 
-        String fields = "";
+        SqlTable table = table();
+
+        StringBuilder sbFields = new StringBuilder();
+        sbFields.append( table.getPk().name );
+
+        for ( SqlField f: table.values() ) {
+            sbFields.append(", ").append( f.name );
+        }
+
         String joins = "";
-        String tables = "";
+        String tables = table.name;
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append( "SELECT ").append( fields ).append( "\n" )
+        sb.append( "SELECT ").append( sbFields ).append( "\n" )
           .append( " FROM ").append( tables ).append( "\n");
 
         if (joins.length() > 0 ) {

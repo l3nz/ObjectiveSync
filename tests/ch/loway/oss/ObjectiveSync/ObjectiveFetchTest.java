@@ -55,7 +55,7 @@ public class ObjectiveFetchTest {
     }
 
     @Test
-    public void testLoadPerson() throws SQLException {
+    public void testPlain() throws SQLException {
 
         PersonDB of = new PersonDB();
 
@@ -95,7 +95,23 @@ public class ObjectiveFetchTest {
 
         List<Person> lP = of.queryDirect(conn, "SELECT * FROM EXAMPLE");
         assertEquals( "N persons", 3, lP.size());
+    }
 
+
+    @Test
+    public void testQuery_plain() throws SQLException {
+
+        PersonDB of = new PersonDB();
+
+        Person p1 = Person.build(0, "jabba", "the hutt");
+        Person p2 = Person.build(0, "luke", "skywalker");
+        of.commit(conn, p1);
+        of.commit(conn, p2);
+
+        List<Person> lP = of.query(conn, "WHERE name = 'luke'");
+        assertEquals( "N persons", 1, lP.size());
+        assertEquals("Surname", "skywalker", lP.get(0).surname );
+        assertTrue( "ID set", lP.get(0).id != 0 );
 
     }
 
