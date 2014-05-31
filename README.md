@@ -74,16 +74,16 @@ You can see examples of simple operations under the 'tests/' folder.
 
 The database accessor requires:
 
-* a ''table()'' method that specifies the fields for your table
-* a ''load()'' method that given a recordset row will build you an object and will schedule DeferredLoading for
+* a **table()** method that specifies the fields for your table
+* a **load()** method that given a recordset row will build you an object and will schedule DeferredLoading for
   additional objects. So for example, in the Organization class you load all organizations and schedule
   deferred loading of all Persons who belong to them. This means you avoid the m*n problem when joining tables
   and that in the future we can schedule deferred loading to be efficient (e.g. batch, or in case you are loading 
   the same record multiple times)
-* a save() method that will save your object as a row on the DB. If you do not need to save, don't implement it.
+* a **save()** method that will save your object as a row on the DB. If you do not need to save, don't implement it.
   Columns have valid defaults for insert and update.
-* a saveSubObjects() that will save dependent objects.
-* an updatePrimaryKey() that will be triggered on inserts.
+* a **saveSubObjects()** that will save dependent objects.
+* an **updatePrimaryKey()** that will be triggered on inserts.
 
 How it all works
 
