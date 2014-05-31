@@ -38,9 +38,9 @@ Aims
  * Centralizing object marshaling and unmarshaling - each object should know how to sync itself and its descendents
  * Single syntax for inserting and updating
  * Ruby-like objectivized JDBC fetching with exception handling
- * user-definable deep fetching and updating (almost Hibernate-like).
- * batch API to avoid round-trips when submitting multiple queries.
- * stats collection and similar stuff.
+ * User-definable deep fetching and updating (almost Hibernate-like).
+ * Batch API to avoid round-trips when submitting multiple queries.
+ * Stats collection and similar stuff.
 
 Downloading
 -----------
