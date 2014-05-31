@@ -13,11 +13,12 @@ public abstract class DeferredLoadByParent<T> extends DeferredLoader<T> {
 
     String whereClause = "";
 
-    public void build( ObjectiveFetch<T> fetcher, int pkId ) {        
+    public DeferredLoadByParent<T> setup( ObjectiveFetch<T> fetcher, int pkId ) {
         this.of = fetcher;
 
         String field = fetcher.table().getParentPk().name;
         whereClause = "WHERE " + field + " = " + pkId;
+        return this;
     }
 
     @Override

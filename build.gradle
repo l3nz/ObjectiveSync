@@ -13,7 +13,7 @@ def env = System.getenv()
 
 project.ext {
   webapp_name    = 'ObjectiveSync'
-  app_version    = '0.0.0.0'
+  app_version    = '0.1.1'
   build_number   = env["BUILD_NUMBER"]  
   version_class  = 'ch/loway/oss/ObjectiveSync/CS.java'
   build_time     = "" + new Date()
@@ -84,17 +84,17 @@ sourceSets {
 task writeNewPom << {
     pom {
         project {
-            groupId 'ch.loway.oss.slicedbread'
-            artifactId 'slicedbread'
+            groupId 'ch.loway.oss.ObjectiveSync'
+            artifactId 'ObjectiveSync'
             version project.ext.app_version
-            inceptionYear '2013'
+            inceptionYear '2014'
             licenses {
                 license {
                     name 'GNU LGPL v3'
                 }
             }
         }
-    }.writeTo("$buildDir/libs/slicedbread-" + project.ext.app_version + ".pom")
+    }.writeTo("$buildDir/libs/ObjectiveSync-" + project.ext.app_version + ".pom")
 }
 
 

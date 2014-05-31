@@ -69,7 +69,7 @@ public abstract class ObjectiveFetch<T> {
      * @throws SQLException
      */
 
-    public void saveSubOjects( Connection conn, T obj ) throws SQLException {
+    public void saveSubObjects( Connection conn, T obj ) throws SQLException {
         
     }
 
@@ -261,7 +261,7 @@ public abstract class ObjectiveFetch<T> {
         }
 
         // if we have any sub objects, let's save them.
-        saveSubOjects(conn, object);
+        saveSubObjects(conn, object);
 
     }
 
