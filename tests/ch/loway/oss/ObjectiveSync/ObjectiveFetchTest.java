@@ -5,18 +5,13 @@
 
 package ch.loway.oss.ObjectiveSync;
 
-import ch.loway.oss.ObjectiveSync.table.SqlTable;
-import ch.loway.oss.ObjectiveSync.updater.FieldSet;
+import java.util.Set;
 import java.util.List;
 import ch.loway.oss.ObjectiveSync.maps.Person;
-import ch.loway.oss.ObjectiveSync.table.SqlField;
-import ch.loway.oss.ObjectiveSync.table.type.IntValue;
-import ch.loway.oss.ObjectiveSync.table.type.StringValue;
-import ch.loway.oss.ObjectiveSync.table.type.TableValue;
-import ch.loway.oss.ObjectiveSync.updater.SqlUpdater;
+import ch.loway.oss.ObjectiveSync.maps.PersonDB;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -47,6 +42,10 @@ public class ObjectiveFetchTest {
     public void setUp() throws ClassNotFoundException, SQLException {
         Class.forName("org.h2.Driver");
         conn = SqlTools.openConnection("jdbc:h2:mem:test");
+
+        String sql = "CREATE TABLE EXAMPLE ( id int auto_increment, name char(50), surname char(50) )";
+        JdbcPattern.exec(conn, sql);
+
     }
 
     @After
@@ -58,46 +57,47 @@ public class ObjectiveFetchTest {
     @Test
     public void testLoadPerson() throws SQLException {
 
-        String sql = "CREATE TABLE EXAMPLE ( id int auto_increment, name char(50), surname char(50) )";
-        JdbcPattern.exec(conn, sql);
-        
-        ObjectiveFetch<Person> of = new ObjectiveFetch<Person>() {
-            @Override
-            public SqlTable table() {
-                return new SqlTable("EXAMPLE")
-                        .field( SqlField.pk("id", "int auto_increment", null) )
-                        .field( SqlField.str("name", "char(50)", null, null ) )
-                        .field( SqlField.str("surname", "char(50)", null, null ) );
-            }
-
-            @Override
-            public Person load(ResultSet rs) throws SQLException {
-                Person p = new Person();
-                p.id = rs.getInt("id");
-                p.name = rs.getString("name");
-                p.surname = rs.getString("surname");
-                return p;
-            }
-
-            @Override
-            public void save(Person p, FieldSet su) throws SQLException {
-                if ( p.id > 0 ) {
-                    su.set("id", new IntValue( p.id ));
-                }
-                su.set("name", new StringValue( p.name ) );
-                su.set( "surname", new StringValue( p.surname) );
-            }
-        };
-
-
+        PersonDB of = new PersonDB();
 
         Person p = Person.build(0, "ike", "boo");
         of.commit(conn, p);
 
-
-        List<Person> lP = of.query(conn, "SELECT * FROM EXAMPLE");
+        List<Person> lP = of.queryDirect(conn, "SELECT * FROM EXAMPLE");
         assertEquals( "N persons", 1, lP.size());
 
     }
+
+    @Test
+    public void testSetPKonInsert() throws SQLException {
+
+        PersonDB of = new PersonDB();
+
+        Person p = Person.build(0, "ike", "boo");
+        of.commit(conn, p);
+
+        assertTrue( "PK should be set", (p.id != 0) );
+
+
+    }
+
+    @Test
+    public void testCommitAll() throws SQLException {
+
+        PersonDB of = new PersonDB();
+
+        Set<Person> collection = new HashSet<Person>();
+
+        collection.add( Person.build(0, "A", "B") );
+        collection.add( Person.build(0, "C", "D") );
+        collection.add( Person.build(0, "E", "F") );
+
+        of.commitAll(conn, collection);
+
+        List<Person> lP = of.queryDirect(conn, "SELECT * FROM EXAMPLE");
+        assertEquals( "N persons", 3, lP.size());
+
+
+    }
+
 
 }
