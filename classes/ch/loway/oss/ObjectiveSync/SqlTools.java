@@ -6,16 +6,16 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
  *
- * $Id$
  * @author lenz
  */
 public class SqlTools {
@@ -185,6 +185,60 @@ public class SqlTools {
             }
         }
 
+    }
+
+    /**
+     * Gets us an IN( ... ) clause backed by enums.
+     * 
+     * @param clauses
+     * @param emptyList
+     * @return
+     */
+
+    public static String quoteInEnum( List<? extends Enum> clauses, String emptyList ) {
+
+        List<String> vals = new ArrayList<String>();
+        for ( Enum e: clauses ) {
+            vals.add(e.name());
+        }
+
+        return quoteInClause(vals, emptyList);
+
+    }
+
+    /**
+     * An IN( ... ) clause backed by a List of Strings.
+     *
+     * @param clauses
+     * @param emptyList
+     * @return
+     */
+
+    public static String quoteInClause( List<String> clauses, String emptyList ) {
+        StringBuilder sb = new StringBuilder();
+        SqlTools.addListToStringBuilder(sb, quoteList(clauses, emptyList), ", ", "");
+        return sb.toString();
+    }
+
+    /**
+     * Quotes a list of items and separates them (usually with a comma or similar).
+     * 
+     * @param values
+     * @param emptyCase
+     * @return
+     */
+
+    public static List<String> quoteList( List<String> values, String emptyCase ) {
+        List<String> out = new ArrayList<String>( values.size() );
+
+        if ( values.isEmpty() ) {
+            out.add( SqlTools.qq(emptyCase) );
+        } else {
+            for ( String s: values ) {
+                out.add( SqlTools.qq(s) );
+            }
+        }
+        return out;
     }
 
 

@@ -13,7 +13,7 @@ def env = System.getenv()
 
 project.ext {
   webapp_name    = 'ObjectiveSync'
-  app_version    = '0.1.1'
+  app_version    = '0.1.2'
   build_number   = env["BUILD_NUMBER"]  
   version_class  = 'ch/loway/oss/ObjectiveSync/CS.java'
   build_time     = "" + new Date()

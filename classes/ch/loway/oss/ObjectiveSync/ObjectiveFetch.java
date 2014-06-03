@@ -31,14 +31,24 @@ public abstract class ObjectiveFetch<T> {
     List<DeferredLoader> deferredLoaders = new ArrayList<DeferredLoader>();
 
     /**
-     * Defines a table - mandatory.
+     * Defines a table.
+     * You need this if you are going to use the query() menthod and do 
+     * reads and updates.
+     * If you just need reading, you can skip it all and use queryDirect()
+     * passing the fields yourself.
+     *
      * @return
      */
 
-    public abstract SqlTable table();
+    public SqlTable table() {
+        return null;
+    }
 
     /**
      * Builds an element out of your row data.
+     * The element is appened to the list of results, until you pass "null"
+     * to signify you don't want it appended (this can be useful e.g. if
+     * you are loading objects with sub-objects as one single join).
      * 
      * @param rs
      * @return The list of objects.
@@ -86,6 +96,11 @@ public abstract class ObjectiveFetch<T> {
         logger.debug( "PK read from DB is {} but I'm not storing it", pkFromDb );
     }
 
+    /**
+     * Adds a deferredLoader.
+     * 
+     * @param l
+     */
 
     public void deferLoading( DeferredLoader l ) {
         deferredLoaders.add(l);
@@ -123,9 +138,11 @@ public abstract class ObjectiveFetch<T> {
 
                 // Loop through the result set
                 while (rs.next()) {
-                    results.add(load(rs));
+                    T result = load(rs);
+                    if ( result != null ) {
+                        results.add( result );
+                    }
                 }
-
             }
         }.run(conn);
 
@@ -151,6 +168,10 @@ public abstract class ObjectiveFetch<T> {
     public List<T> query(Connection conn, final String sqlWhere) throws SQLException {
 
         SqlTable table = table();
+
+        if ( table == null ) {
+            throw new SQLException("Table appears to be undefined. You should use the queryDirect() method.");
+        }
 
         StringBuilder sbFields = new StringBuilder();
         sbFields.append( table.getPk().name );
