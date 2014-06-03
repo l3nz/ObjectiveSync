@@ -16,15 +16,8 @@ import java.util.Map;
  * @author lenz
  */
 public class ACInfoDB extends ObjectiveFetch<ACInfo> {
-
     
     Map<Integer,ACInfo> results = new HashMap<Integer, ACInfo>();
-
-
-    @Override
-    public SqlTable table() {
-        return null;
-    }
 
     /**
      * Notice a pattern here.
@@ -83,9 +76,6 @@ public class ACInfoDB extends ObjectiveFetch<ACInfo> {
             + " FROM campaigns c "
             + "   LEFT JOIN hopper ON c.campaignId = hopper.campaign "
             + "  WHERE c.pace = 'RUNNABLE' "
-//            + "     AND (hopper.runMode IN ( "
-//                    + SqlTools.quoteInEnum( ACInfo.RunMode.asList(), "-")
-//            + "     ) or hopper.runMode IS NULL) "
             + " GROUP BY c.campaignId, c.name,  c.securityKey, hopper.runMode "
         );
 
