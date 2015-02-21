@@ -30,7 +30,7 @@ public class SqlTools {
      * @throws SQLException
      */
     public static Connection openConnection(String connString) throws SQLException {
-        Connection conn = DriverManager.getConnection("jdbc:h2:mem:test");
+        Connection conn = DriverManager.getConnection( connString );
         return conn;
     }
 
