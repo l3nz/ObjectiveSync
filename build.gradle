@@ -1,6 +1,5 @@
 // build file here
 
-JARS="$buildDir/dependencies"
 
 apply plugin: 'java'
 apply plugin: 'findbugs'
@@ -22,8 +21,7 @@ project.ext {
 
 
 repositories {
-    //mavenCentral()
-	mavenRepo(url: 'http://jcenter.bintray.com') 
+    mavenCentral()
 }
 
 configurations {
@@ -55,7 +53,7 @@ task solveDeps << {
 
 	copy {
         from configurations.ObjSync
-        into "$JARS"
+        into "$buildDir/dependencies"
         include '**/*.jar'        
     }
 	
