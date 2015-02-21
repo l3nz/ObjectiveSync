@@ -5,6 +5,9 @@ A thin Java object persistence layer for JDBC.
 
 [ ![Download](https://api.bintray.com/packages/lenz/maven/ObjectiveSync/images/download.png) ](https://bintray.com/lenz/maven/ObjectiveSync/_latestVersion)
 
+News: 
+
+* Feb 21, 2015: Version 0.1.4 will have a working Connection.
 
 Ideas
 -----
@@ -12,7 +15,7 @@ Ideas
 Great things in Hibernate:
 
 * Association mapping: loading and saving associations in one easy step
-* database independence
+* Database independence
 
 Not-so-great things:
 
@@ -55,7 +58,7 @@ If you use Gradle (or any tool using Maven dependencies) you can simply declare 
 
 
 	dependencies {
-	    compile 'ch.loway.oss.ObjectiveSync:ObjectiveSync:0.1.1'
+	    compile 'ch.loway.oss.ObjectiveSync:ObjectiveSync:0.1.4'
 	}
 
 
