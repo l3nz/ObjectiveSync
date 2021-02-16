@@ -6,7 +6,7 @@ A thin Java object persistence layer for JDBC.
 
 **Downloading**
 
-This library used to be on JCenter. Frankly, I cannot be bothered to jump through all the hoops to publish on Maven Central - I do this in my spare time, give me a break. So you can build it on your own and publish on your private repo - I enclose a recipe for PomFrites https://github.com/l3nz/ObjectiveSync.git to make it easier. Enjoy.
+This library used to be on JCenter. Frankly, I cannot be bothered to jump through all the hoops to publish on Maven Central - I do this in my spare time, give me a break. So you can build it on your own and publish on your private repo - I enclose a recipe for PomFrites https://github.com/l3nz/pom_frites to make it easier. Enjoy.
 
 
 
