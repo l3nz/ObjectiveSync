@@ -1,0 +1,11 @@
+{
+	"group": "loway",
+	"artifact": "ObjectiveSync",
+	"license": "Loway - All rights reserved",
+	"depends": [
+		"org.slf4j:slf4j-api:1.7.7"          
+	],
+	"testdepends": [
+	]
+}
+
